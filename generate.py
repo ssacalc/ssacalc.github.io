@@ -149,6 +149,33 @@ window.addEventListener('DOMContentLoaded', () => {
 """
 
 
+GROWTH_SVG = """
+<svg viewBox="0 0 320 130" width="100%" height="110" role="img"
+     aria-label="Three plants of increasing size, illustrating how your benefit grows the longer you wait to claim"
+     style="display:block;margin:18px auto;max-width:320px">
+  <line x1="20" y1="120" x2="300" y2="120" stroke="var(--border)" stroke-width="2"/>
+  <path d="M50,120 L54,98 L76,98 L80,120 Z" fill="#c98a56"/>
+  <line x1="65" y1="98" x2="65" y2="85" stroke="#8a5f3a" stroke-width="2"/>
+  <circle cx="65" cy="80" r="11" fill="var(--primary)"/>
+  <circle cx="57" cy="86" r="7" fill="#8b7ff0"/>
+  <circle cx="73" cy="86" r="7" fill="#8b7ff0"/>
+  <path d="M140,120 L145,98 L175,98 L180,120 Z" fill="#c98a56"/>
+  <line x1="160" y1="98" x2="160" y2="68" stroke="#8a5f3a" stroke-width="2"/>
+  <circle cx="160" cy="61" r="15" fill="var(--primary)"/>
+  <circle cx="147" cy="70" r="9" fill="#8b7ff0"/>
+  <circle cx="173" cy="70" r="9" fill="#8b7ff0"/>
+  <circle cx="160" cy="48" r="8" fill="#8b7ff0"/>
+  <path d="M230,120 L236,98 L274,98 L280,120 Z" fill="#c98a56"/>
+  <line x1="255" y1="98" x2="255" y2="50" stroke="#8a5f3a" stroke-width="2"/>
+  <circle cx="255" cy="42" r="18" fill="var(--primary)"/>
+  <circle cx="238" cy="53" r="11" fill="#8b7ff0"/>
+  <circle cx="272" cy="53" r="11" fill="#8b7ff0"/>
+  <circle cx="255" cy="25" r="9" fill="#8b7ff0"/>
+  <circle cx="255" cy="18" r="7" fill="#f5b942"/>
+</svg>
+"""
+
+
 def index_html():
     year_options = "\n".join(f'<option value="{y}">{y}</option>' for y in DROPDOWN_YEARS)
     year_grid_items = "\n".join(
@@ -160,7 +187,7 @@ def index_html():
   <p>See how your monthly Social Security benefit changes depending on the age you claim it,
   and how long it takes for waiting to pay off in total dollars received. Uses the same
   reduction and delayed-credit formulas as SSA's own calculators.</p>
-
+  {GROWTH_SVG}
   <div class="calc-card">
     <div class="calc-row">
       <div class="calc-field">
