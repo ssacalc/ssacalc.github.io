@@ -10,7 +10,7 @@ AdSense dashboard once it's live, no new registration needed.
 """
 
 SITE_NAME = "Social Security Calculator"
-CONTACT_EMAIL = "contact@yourdomain.com"
+CONTACT_EMAIL = "usstatewages@gmail.com"
 
 GA4_MEASUREMENT_ID = "G-75N1M00YPR"
 ADSENSE_CLIENT = "ca-pub-5607384951754093"
