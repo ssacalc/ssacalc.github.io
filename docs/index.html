@@ -41,6 +41,14 @@ function pctOfPiaJS(claimMonths, fraM) {
 function fmtPctJS(p) {
   return p.toFixed(1).replace(/\.0$/, '');
 }
+function onBenefitInput() {
+  const el = document.getElementById('fraBenefit');
+  const cursorFromEnd = el.value.length - el.selectionStart;
+  const digits = el.value.replace(/[^0-9]/g, '');
+  el.value = digits === '' ? '' : parseInt(digits, 10).toLocaleString('en-US');
+  const pos = Math.max(el.value.length - cursorFromEnd, 0);
+  el.setSelectionRange(pos, pos);
+}
 function breakevenAge(a, b) {
   for (let m = b.months; m <= 100*12; m++) {
     if (b.monthly*(m - b.months) >= a.monthly*(m - a.months)) return Math.round(m/12);
@@ -51,7 +59,7 @@ function calculate() {
   const yearEl = document.getElementById('birthYear');
   const benefitEl = document.getElementById('fraBenefit');
   const year = parseInt(yearEl.value, 10);
-  const benefit = parseFloat(benefitEl.value);
+  const benefit = parseFloat((benefitEl.value || '').replace(/,/g, ''));
   if (!year || !benefit || benefit <= 0) {
     alert('Enter your birth year and your estimated benefit at full retirement age.');
     return;
@@ -286,7 +294,7 @@ window.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="calc-field">
         <label for="fraBenefit">Estimated benefit at full retirement age ($/month)</label>
-        <input type="number" id="fraBenefit" placeholder="e.g. 2200" min="0" step="1">
+        <input type="text" inputmode="numeric" id="fraBenefit" placeholder="e.g. 2,200" oninput="onBenefitInput()">
       </div>
     </div>
     <button class="calc-btn" onclick="calculate()">Calculate</button>
