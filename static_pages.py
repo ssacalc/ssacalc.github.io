@@ -3,16 +3,16 @@ Static pages required for AdSense review (privacy policy / about / contact), plu
 theme parts (style/header/footer/GA+AdSense snippet), mirroring the us-state-minimum-wage /
 us-paycheck-calculator / krcalctools project structure (see site-deployment-handoff.md).
 
-GA4_MEASUREMENT_ID is a placeholder - create a new GA4 property under the same account used
-for the other sites and swap it in before deploying. ADSENSE_CLIENT reuses the existing
-publisher account (ca-pub- IDs are per-publisher, not per-site) - just add this as a new
-site in the AdSense dashboard once it's live, no new registration needed.
+GA4 property "ssacalc" created under the same account as the other sites ("마자용"),
+measurement ID G-75N1M00YPR. ADSENSE_CLIENT reuses the existing publisher account
+(ca-pub- IDs are per-publisher, not per-site) - just add this as a new site in the
+AdSense dashboard once it's live, no new registration needed.
 """
 
 SITE_NAME = "Social Security Calculator"
 CONTACT_EMAIL = "contact@yourdomain.com"
 
-GA4_MEASUREMENT_ID = "G-XXXXXXXXXX"
+GA4_MEASUREMENT_ID = "G-75N1M00YPR"
 ADSENSE_CLIENT = "ca-pub-5607384951754093"
 
 GA_SNIPPET = f"""<!-- Google tag (gtag.js) -->
