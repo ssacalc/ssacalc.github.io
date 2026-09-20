@@ -1,5 +1,5 @@
 """
-Static pages required for AdSense review (privacy policy / about / contact), plus shared
+Static pages required for AdSense review (privacy policy / about), plus shared
 theme parts (style/header/footer/GA+AdSense snippet), mirroring the us-state-minimum-wage /
 us-paycheck-calculator / krcalctools project structure (see site-deployment-handoff.md).
 
@@ -9,6 +9,9 @@ measurement ID G-75N1M00YPR. ADSENSE_CLIENT reuses the existing publisher accoun
 AdSense dashboard once it's live, no new registration needed.
 """
 
+# contact.html은 2026-09-20에 사용자 요청으로 제거했다. 애드센스는 연락 수단을
+# 요구하므로 심사에서 지적될 수 있다는 점을 알린 뒤의 결정이다. 문의 주소는
+# privacy.html의 Contact 섹션에만 남아 있다(개인정보처리방침의 필수 요소).
 SITE_NAME = "Social Security Calculator"
 CONTACT_EMAIL = "usstatewages@gmail.com"
 
@@ -32,7 +35,6 @@ FOOTER_NAV = """
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="privacy.html">Privacy Policy</a>
-    <a href="contact.html">Contact</a>
   </div>
 """
 
@@ -120,6 +122,26 @@ SITE_STYLE = """
   .calc-btn:hover { background: var(--primary-dark); }
   .calc-result { margin-top: 18px; display: none; }
   .breakeven-line { padding: 10px 12px; background: #f5f3ff; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
+
+  .offer-card {
+    margin-top: 18px; padding: 16px 18px; background: #fffbeb;
+    border: 1px solid #fde68a; border-radius: 12px;
+  }
+  .offer-card .offer-label {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: #92400e; background: #fef3c7;
+    padding: 2px 7px; border-radius: 4px; margin-bottom: 8px;
+  }
+  .offer-card h3 { font-size: 15px; margin: 0 0 6px; color: var(--text); }
+  .offer-card p { margin: 0 0 12px; font-size: 13px; color: #374151; line-height: 1.6; }
+  .offer-card .offer-cta {
+    display: inline-block; background: #b45309; color: #fff; text-decoration: none;
+    font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 8px;
+  }
+  .offer-card .offer-cta:hover { background: #92400e; }
+  .offer-card .offer-disclosure {
+    margin: 10px 0 0; font-size: 11px; color: #78716c; line-height: 1.5;
+  }
 
   .faq { margin-top: 26px; }
   .faq h2 { font-size: 15px; margin-bottom: 10px; }
@@ -223,22 +245,19 @@ def privacy_html():
   <p>This site displays ads served by Google AdSense. Google may use cookies to serve ads based on
   your prior visits to this or other websites. See Google's advertising policies for details.</p>
 
-  <h2>4. Contact</h2>
+  <h2>4. Affiliate Links</h2>
+  <p>Some pages on this site contain paid partner (affiliate) links, which are labeled as
+  advertising where they appear. If you follow one of those links and request a quote or sign
+  up for a service, this site may earn a commission at no extra cost to you. These links are
+  advertising, not recommendations - they do not affect the figures the calculator shows, which
+  are computed only from SSA's published formulas and the numbers you enter. Any information
+  you provide after leaving this site is handled by that partner under their own privacy policy,
+  not this one.</p>
+
+  <h2>5. Contact</h2>
   <p>Questions about this privacy policy can be sent to <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.</p>
 
-  <h2>5. Effective Date</h2>
-  <p>This policy is effective as of August 23, 2026.</p>
-""",
-    )
-
-
-def contact_html():
-    return page_shell(
-        f"Contact - {SITE_NAME}",
-        f"Contact page for {SITE_NAME}.",
-        f"""
-  <h1>Contact</h1>
-  <p>Questions, corrections, or advertising/partnership inquiries can be sent to the email below.</p>
-  <p><a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a></p>
+  <h2>6. Effective Date</h2>
+  <p>This policy is effective as of August 23, 2026. Last updated September 20, 2026.</p>
 """,
     )

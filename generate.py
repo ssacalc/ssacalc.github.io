@@ -14,13 +14,15 @@ back in October" - thin compared to the FRA content, which is fixed law. Add it 
 real number is out (see usstatewages-minimum-wage-site memory for the same phasing choice
 made on that site).
 """
+import json
 import os
 
 from ssa_data import (
     DETAIL_YEARS, fra_months_for_year, fra_label, year_label, pct_of_pia, fmt_pct,
     SOURCE_FRA, SOURCE_REDUCTION, SOURCE_DELAYED,
 )
-from static_pages import about_html, privacy_html, contact_html, SITE_NAME, page_shell
+from static_pages import about_html, privacy_html, SITE_NAME, page_shell
+import offers
 
 OUTPUT_DIR = "docs"
 BASE_URL = "https://ssacalc.github.io"
@@ -62,8 +64,66 @@ def pct_table_html(fra_months):
   </table>"""
 
 
-CALCULATOR_JS = """
+def calculator_js():
+    """계산기 JS. 제휴 오퍼 payload를 여기서 주입한다.
+
+    오퍼는 '계산을 마친 뒤'에만 그린다. 첫 화면에 안 띄우는 이유는 세 가지다 -
+    의도가 가장 높은 순간이 결과를 본 직후이고, 초기 렌더에 광고가 없으면
+    페이지 속도에 유리하고, 애드센스 영역과 시각적으로 겹치지 않는다.
+    """
+    return """
 <script>
+const OFFERS = __OFFERS_JSON__;
+const AGE_BUCKETS = __AGE_BUCKETS_JSON__;
+function ageBucket(age) {
+  const b = AGE_BUCKETS.find(b =>
+    (b.lo === null || age >= b.lo) && (b.hi === null || age <= b.hi));
+  return b ? b.label : 'unknown';
+}
+function pickOffer(currentAge) {
+  // 나이 조건이 맞는 첫 슬롯 하나만 쓴다. 여러 개를 쌓으면 광고판이 된다.
+  return OFFERS.find(o =>
+    (o.minAge === null || currentAge >= o.minAge) &&
+    (o.maxAge === null || currentAge <= o.maxAge)
+  ) || null;
+}
+function renderOffer(birthYear) {
+  const slot = document.getElementById('offerSlot');
+  if (!slot) return;
+  slot.innerHTML = '';
+  if (!OFFERS.length) return;
+  const currentAge = new Date().getFullYear() - birthYear;
+  const offer = pickOffer(currentAge);
+  if (!offer) return;
+  const a = document.createElement('a');
+  a.className = 'offer-cta';
+  a.href = offer.url;
+  a.target = '_blank';
+  // 유료 링크는 구글이 rel="sponsored"를 요구한다. 빠지면 링크 스킴 위반이다.
+  a.rel = 'sponsored nofollow noopener';
+  a.textContent = offer.cta;
+  a.addEventListener('click', () => {
+    if (typeof gtag === 'function') {
+      // 원시 나이 대신 버킷을 보낸다 - GA4 리포트가 깔끔하고, 정밀한
+      // 준식별자를 넘기지 않게 된다.
+      gtag('event', 'offer_click', {offer_key: offer.key, age_bucket: ageBucket(currentAge)});
+    }
+  });
+  const card = document.createElement('div');
+  card.className = 'offer-card';
+  const label = document.createElement('span');
+  label.className = 'offer-label';
+  label.textContent = 'Advertisement';
+  const h3 = document.createElement('h3');
+  h3.textContent = offer.headline;
+  const body = document.createElement('p');
+  body.textContent = offer.body;
+  const disc = document.createElement('p');
+  disc.className = 'offer-disclosure';
+  disc.textContent = __DISCLOSURE_JSON__;
+  card.append(label, h3, body, a, disc);
+  slot.appendChild(card);
+}
 function fraMonthsJS(year) {
   const table = {1943:792,1944:792,1945:792,1946:792,1947:792,1948:792,1949:792,1950:792,
     1951:792,1952:792,1953:792,1954:792,1955:794,1956:796,1957:798,1958:800,1959:802};
@@ -139,6 +199,17 @@ function calculate() {
   });
   document.getElementById('breakevenResult').innerHTML = lines;
   document.getElementById('calcResult').style.display = 'block';
+
+  // 방문자 연령 분포를 모은다. offers.py의 연령 창은 지금 업계 평균으로
+  // 잡혀 있고, 이 이벤트가 쌓이면 실제 분포로 교체하는 것이 목적이다.
+  const currentAge = new Date().getFullYear() - year;
+  if (typeof gtag === 'function') {
+    gtag('event', 'calc_complete', {
+      age_bucket: ageBucket(currentAge),
+      fra_label: fraLabelJS(year),
+    });
+  }
+  renderOffer(year);
 }
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
@@ -146,7 +217,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (y) document.getElementById('birthYear').value = y;
 });
 </script>
-"""
+""".replace("__OFFERS_JSON__", offers.offers_js_payload())    .replace("__AGE_BUCKETS_JSON__", offers.age_buckets_js())    .replace("__DISCLOSURE_JSON__", json.dumps(offers.DISCLOSURE))
 
 
 GROWTH_SVG = """
@@ -211,6 +282,7 @@ def index_html():
       </table>
       <h2>When does waiting pay off?</h2>
       <div id="breakevenResult"></div>
+      <div id="offerSlot"></div>
     </div>
   </div>
   <p class="source">Don't know your estimated benefit? Look it up for free at
@@ -272,7 +344,7 @@ def index_html():
         f"{SITE_NAME} - When Should You Claim Social Security?",
         "Calculate your Social Security monthly benefit at every claiming age from 62 to 70, and see the breakeven age where delaying pays off, using SSA's own official formulas.",
         body,
-        extra_head=CALCULATOR_JS,
+        extra_head=calculator_js(),
     )
 
 
@@ -347,7 +419,7 @@ def year_detail_html(year):
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    valid_filenames = {"index.html", "about.html", "privacy.html", "contact.html", "sitemap.xml", "ads.txt"}
+    valid_filenames = {"index.html", "about.html", "privacy.html", "sitemap.xml", "ads.txt"}
     for year in DETAIL_YEARS:
         valid_filenames.add(detail_slug(year))
     for fname in os.listdir(OUTPUT_DIR):
@@ -366,7 +438,7 @@ def main():
             f.write(year_detail_html(year))
         urls.append(f"{BASE_URL}/{detail_slug(year)}")
 
-    static_files = {"about.html": about_html(), "privacy.html": privacy_html(), "contact.html": contact_html()}
+    static_files = {"about.html": about_html(), "privacy.html": privacy_html()}
     for filename, html in static_files.items():
         with open(os.path.join(OUTPUT_DIR, filename), "w", encoding="utf-8") as f:
             f.write(html)

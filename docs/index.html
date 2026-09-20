@@ -19,6 +19,57 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E">
 
 <script>
+const OFFERS = [];
+const AGE_BUCKETS = [{"lo": null, "hi": 54, "label": "under-55"}, {"lo": 55, "hi": 59, "label": "55-59"}, {"lo": 60, "hi": 62, "label": "60-62"}, {"lo": 63, "hi": 64, "label": "63-64"}, {"lo": 65, "hi": 67, "label": "65-67"}, {"lo": 68, "hi": 70, "label": "68-70"}, {"lo": 71, "hi": null, "label": "71-plus"}];
+function ageBucket(age) {
+  const b = AGE_BUCKETS.find(b =>
+    (b.lo === null || age >= b.lo) && (b.hi === null || age <= b.hi));
+  return b ? b.label : 'unknown';
+}
+function pickOffer(currentAge) {
+  // 나이 조건이 맞는 첫 슬롯 하나만 쓴다. 여러 개를 쌓으면 광고판이 된다.
+  return OFFERS.find(o =>
+    (o.minAge === null || currentAge >= o.minAge) &&
+    (o.maxAge === null || currentAge <= o.maxAge)
+  ) || null;
+}
+function renderOffer(birthYear) {
+  const slot = document.getElementById('offerSlot');
+  if (!slot) return;
+  slot.innerHTML = '';
+  if (!OFFERS.length) return;
+  const currentAge = new Date().getFullYear() - birthYear;
+  const offer = pickOffer(currentAge);
+  if (!offer) return;
+  const a = document.createElement('a');
+  a.className = 'offer-cta';
+  a.href = offer.url;
+  a.target = '_blank';
+  // 유료 링크는 구글이 rel="sponsored"를 요구한다. 빠지면 링크 스킴 위반이다.
+  a.rel = 'sponsored nofollow noopener';
+  a.textContent = offer.cta;
+  a.addEventListener('click', () => {
+    if (typeof gtag === 'function') {
+      // 원시 나이 대신 버킷을 보낸다 - GA4 리포트가 깔끔하고, 정밀한
+      // 준식별자를 넘기지 않게 된다.
+      gtag('event', 'offer_click', {offer_key: offer.key, age_bucket: ageBucket(currentAge)});
+    }
+  });
+  const card = document.createElement('div');
+  card.className = 'offer-card';
+  const label = document.createElement('span');
+  label.className = 'offer-label';
+  label.textContent = 'Advertisement';
+  const h3 = document.createElement('h3');
+  h3.textContent = offer.headline;
+  const body = document.createElement('p');
+  body.textContent = offer.body;
+  const disc = document.createElement('p');
+  disc.className = 'offer-disclosure';
+  disc.textContent = "Advertising disclosure: the link above is a paid partner link. This site may earn a commission if you request a quote. It is not a recommendation, and it does not change what the calculator above shows you.";
+  card.append(label, h3, body, a, disc);
+  slot.appendChild(card);
+}
 function fraMonthsJS(year) {
   const table = {1943:792,1944:792,1945:792,1946:792,1947:792,1948:792,1949:792,1950:792,
     1951:792,1952:792,1953:792,1954:792,1955:794,1956:796,1957:798,1958:800,1959:802};
@@ -94,6 +145,17 @@ function calculate() {
   });
   document.getElementById('breakevenResult').innerHTML = lines;
   document.getElementById('calcResult').style.display = 'block';
+
+  // 방문자 연령 분포를 모은다. offers.py의 연령 창은 지금 업계 평균으로
+  // 잡혀 있고, 이 이벤트가 쌓이면 실제 분포로 교체하는 것이 목적이다.
+  const currentAge = new Date().getFullYear() - year;
+  if (typeof gtag === 'function') {
+    gtag('event', 'calc_complete', {
+      age_bucket: ageBucket(currentAge),
+      fra_label: fraLabelJS(year),
+    });
+  }
+  renderOffer(year);
 }
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
@@ -174,6 +236,26 @@ window.addEventListener('DOMContentLoaded', () => {
   .calc-btn:hover { background: var(--primary-dark); }
   .calc-result { margin-top: 18px; display: none; }
   .breakeven-line { padding: 10px 12px; background: #f5f3ff; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
+
+  .offer-card {
+    margin-top: 18px; padding: 16px 18px; background: #fffbeb;
+    border: 1px solid #fde68a; border-radius: 12px;
+  }
+  .offer-card .offer-label {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: #92400e; background: #fef3c7;
+    padding: 2px 7px; border-radius: 4px; margin-bottom: 8px;
+  }
+  .offer-card h3 { font-size: 15px; margin: 0 0 6px; color: var(--text); }
+  .offer-card p { margin: 0 0 12px; font-size: 13px; color: #374151; line-height: 1.6; }
+  .offer-card .offer-cta {
+    display: inline-block; background: #b45309; color: #fff; text-decoration: none;
+    font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 8px;
+  }
+  .offer-card .offer-cta:hover { background: #92400e; }
+  .offer-card .offer-disclosure {
+    margin: 10px 0 0; font-size: 11px; color: #78716c; line-height: 1.5;
+  }
 
   .faq { margin-top: 26px; }
   .faq h2 { font-size: 15px; margin-bottom: 10px; }
@@ -330,6 +412,7 @@ window.addEventListener('DOMContentLoaded', () => {
       </table>
       <h2>When does waiting pay off?</h2>
       <div id="breakevenResult"></div>
+      <div id="offerSlot"></div>
     </div>
   </div>
   <p class="source">Don't know your estimated benefit? Look it up for free at
@@ -419,7 +502,6 @@ window.addEventListener('DOMContentLoaded', () => {
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="privacy.html">Privacy Policy</a>
-    <a href="contact.html">Contact</a>
   </div>
 
 </body>
