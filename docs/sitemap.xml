@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://ssacalc.github.io/1943-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1944-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1945-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1946-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1947-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1948-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1949-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1950-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1951-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1952-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1953-full-retirement-age.html</loc></url>
-  <url><loc>https://ssacalc.github.io/1954-full-retirement-age.html</loc></url>
+  <url><loc>https://ssacalc.github.io/1943-1954-full-retirement-age.html</loc></url>
   <url><loc>https://ssacalc.github.io/1955-full-retirement-age.html</loc></url>
   <url><loc>https://ssacalc.github.io/1956-full-retirement-age.html</loc></url>
   <url><loc>https://ssacalc.github.io/1957-full-retirement-age.html</loc></url>
@@ -19,6 +8,13 @@
   <url><loc>https://ssacalc.github.io/1959-full-retirement-age.html</loc></url>
   <url><loc>https://ssacalc.github.io/1960-and-later-full-retirement-age.html</loc></url>
   <url><loc>https://ssacalc.github.io/about.html</loc></url>
+  <url><loc>https://ssacalc.github.io/breakeven-age.html</loc></url>
+  <url><loc>https://ssacalc.github.io/changing-your-mind.html</loc></url>
+  <url><loc>https://ssacalc.github.io/guides.html</loc></url>
   <url><loc>https://ssacalc.github.io/index.html</loc></url>
   <url><loc>https://ssacalc.github.io/privacy.html</loc></url>
+  <url><loc>https://ssacalc.github.io/social-security-taxes.html</loc></url>
+  <url><loc>https://ssacalc.github.io/spousal-benefits.html</loc></url>
+  <url><loc>https://ssacalc.github.io/survivor-benefits.html</loc></url>
+  <url><loc>https://ssacalc.github.io/working-while-collecting-social-security.html</loc></url>
 </urlset>

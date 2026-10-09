@@ -18,10 +18,12 @@ import json
 import os
 
 from ssa_data import (
-    DETAIL_YEARS, fra_months_for_year, fra_label, year_label, pct_of_pia, fmt_pct,
+    DETAIL_YEARS, YEARS_FRA_66, fra_months_for_year, fra_label, year_label, year_phrase,
+    pct_of_pia, fmt_pct,
     SOURCE_FRA, SOURCE_REDUCTION, SOURCE_DELAYED,
 )
 from static_pages import about_html, privacy_html, SITE_NAME, page_shell
+import guides
 import offers
 
 OUTPUT_DIR = "docs"
@@ -43,10 +45,69 @@ DISCLAIMER = """
 """
 
 
+def cohort_note(year):
+    """Explain why a page covers a range of birth years rather than just one."""
+    if year == "1943-1954":
+        return """
+  <div class="explain">
+    <p>Congress raised the full retirement age gradually, and the increase did not begin until the
+    1955 birth year. Everyone born from 1943 through 1954 therefore shares the same full retirement
+    age of 66, with identical reduction and delayed-credit percentages - so one page covers all
+    twelve years rather than repeating the same table twelve times.</p>
+    <p>If you were born in 1955 or later, your full retirement age is higher: see
+    <a href="1955-full-retirement-age.html">1955</a>, <a href="1956-full-retirement-age.html">1956</a>,
+    <a href="1957-full-retirement-age.html">1957</a>, <a href="1958-full-retirement-age.html">1958</a>,
+    <a href="1959-full-retirement-age.html">1959</a> or
+    <a href="1960-and-later-full-retirement-age.html">1960 and later</a>.</p>
+  </div>"""
+    if year == "1960plus":
+        return """
+  <div class="explain">
+    <p>The full retirement age stops rising at 67. Every birth year from 1960 onward shares the same
+    figure, so one page covers all of them - there is no separate answer for 1965, 1972 or 1990.</p>
+  </div>"""
+    return ""
+
+
+def calc_year(year):
+    """A concrete birth year to deep-link the calculator with, for the merged cohort pages."""
+    if year == "1960plus":
+        return 1960
+    if year == "1943-1954":
+        return 1950
+    return year
+
+
 def detail_slug(year):
     if year == "1960plus":
         return "1960-and-later-full-retirement-age.html"
+    if year == "1943-1954":
+        return "1943-1954-full-retirement-age.html"
     return f"{year}-full-retirement-age.html"
+
+
+def legacy_year_slug(year):
+    """URL each 1943-1954 birth year had before those pages were merged into one."""
+    return f"{year}-full-retirement-age.html"
+
+
+def redirect_stub_html(year):
+    target = detail_slug("1943-1954")
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Full Retirement Age for {year} - moved</title>
+<link rel="canonical" href="{BASE_URL}/{target}">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>location.replace("{target}");</script>
+</head>
+<body>
+<p>Everyone born between 1943 and 1954 has the same full retirement age, so these pages were
+combined. This page has moved to <a href="{target}">{BASE_URL}/{target}</a>.</p>
+</body>
+</html>"""
 
 
 def pct_table_html(fra_months):
@@ -352,7 +413,7 @@ def year_detail_html(year):
     fra_m = fra_months_for_year(year)
     label = year_label(year)
     fra = fra_label(year)
-    who = f"born in {year}" if year != "1960plus" else "born in 1960 or later"
+    who = year_phrase(year)
 
     headline = f"""
   <div class="headline">
@@ -384,19 +445,20 @@ def year_detail_html(year):
       <p>This page shows percentages of your full benefit, not a dollar figure - your actual
       full-retirement-age benefit depends on your own earnings history. Look it up for free at
       <a href="https://www.ssa.gov/myaccount" target="_blank" rel="noopener">ssa.gov/myaccount</a>,
-      then use the <a href="index.html?year={1960 if year == '1960plus' else year}">calculator</a> to
+      then use the <a href="index.html?year={calc_year(year)}">calculator</a> to
       see your actual dollar amounts at every claiming age.</p>
     </details>
   </div>"""
 
     body = f"""
-  <h1>Full Retirement Age for {label}</h1>
+  <h1>Full Retirement Age for Anyone {who.capitalize()}</h1>
   {headline}
+  {cohort_note(year)}
 
   <div class="explain">
     <h2>Your benefit at every claiming age</h2>
     <p>Shown as a percentage of your full (FRA) benefit - enter your own estimated dollar amount
-    in the <a href="index.html?year={1960 if year == '1960plus' else year}">calculator</a> to see
+    in the <a href="index.html?year={calc_year(year)}">calculator</a> to see
     real dollar figures.</p>
   </div>
   {pct_table_html(fra_m)}
@@ -416,12 +478,47 @@ def year_detail_html(year):
     return page_shell(title, desc, body)
 
 
+def guides_index_html():
+    cards = "\n".join(
+        f'<li><a href="{guides.guide_slug(g["slug"])}"><b>{g["title"]}</b></a>'
+        f'<span class="guide-desc">{g["description"]}</span></li>'
+        for g in guides.GUIDES
+    )
+    body = f"""
+  <h1>Social Security Guides</h1>
+  <p>The calculator answers one question: how much your benefit changes with the age you claim.
+  These cover the decisions around it - working while collecting, what a spouse or survivor gets,
+  how much of the benefit is taxed, and what you can still undo after filing.</p>
+  <ul class="guide-list">
+  {cards}
+  </ul>
+  <div class="nav"><a href="index.html">&larr; Back to the calculator</a></div>
+"""
+    return page_shell(
+        f"Social Security Guides - {SITE_NAME}",
+        "Plain-English guides to Social Security: the earnings test, spousal and survivor benefits, "
+        "taxation of benefits, breakeven analysis, and withdrawing or suspending a claim.",
+        body,
+    )
+
+
+def guide_page_html(guide):
+    return page_shell(f"{guide['title']} - {SITE_NAME}", guide["description"],
+                      guide["body"] + DISCLAIMER)
+
+
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    valid_filenames = {"index.html", "about.html", "privacy.html", "sitemap.xml", "ads.txt"}
+    valid_filenames = {"index.html", "about.html", "privacy.html", "guides.html",
+                       "sitemap.xml", "ads.txt", "robots.txt"}
+    for g in guides.GUIDES:
+        valid_filenames.add(guides.guide_slug(g["slug"]))
     for year in DETAIL_YEARS:
         valid_filenames.add(detail_slug(year))
+    # The twelve merged birth-year URLs stay as instant redirects in case anything linked them.
+    for year in YEARS_FRA_66:
+        valid_filenames.add(legacy_year_slug(year))
     for fname in os.listdir(OUTPUT_DIR):
         path = os.path.join(OUTPUT_DIR, fname)
         if os.path.isfile(path) and fname.endswith(".html") and fname not in valid_filenames:
@@ -438,13 +535,29 @@ def main():
             f.write(year_detail_html(year))
         urls.append(f"{BASE_URL}/{detail_slug(year)}")
 
+    with open(os.path.join(OUTPUT_DIR, "guides.html"), "w", encoding="utf-8") as f:
+        f.write(guides_index_html())
+    urls.append(f"{BASE_URL}/guides.html")
+
+    for g in guides.GUIDES:
+        fname = guides.guide_slug(g["slug"])
+        with open(os.path.join(OUTPUT_DIR, fname), "w", encoding="utf-8") as f:
+            f.write(guide_page_html(g))
+        urls.append(f"{BASE_URL}/{fname}")
+
+    # Redirect stubs are deliberately NOT appended to `urls`: they carry noindex and must stay
+    # out of the sitemap.
+    for year in YEARS_FRA_66:
+        with open(os.path.join(OUTPUT_DIR, legacy_year_slug(year)), "w", encoding="utf-8") as f:
+            f.write(redirect_stub_html(year))
+
     static_files = {"about.html": about_html(), "privacy.html": privacy_html()}
     for filename, html in static_files.items():
         with open(os.path.join(OUTPUT_DIR, filename), "w", encoding="utf-8") as f:
             f.write(html)
         urls.append(f"{BASE_URL}/{filename}")
 
-    print(f"Generated {len(urls)} pages -> {OUTPUT_DIR}/")
+    print(f"Generated {len(urls)} pages + {len(YEARS_FRA_66)} redirect stubs -> {OUTPUT_DIR}/")
     return urls
 
 

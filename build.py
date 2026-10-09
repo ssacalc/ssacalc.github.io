@@ -1,10 +1,13 @@
-"""Full site build: generate all pages + ads.txt + sitemap.xml."""
+"""Full site build: generate all pages + ads.txt + robots.txt + sitemap.xml."""
 import os
 import generate
 from static_pages import ADSENSE_CLIENT
 
 OUTPUT_DIR = generate.OUTPUT_DIR
 BASE_URL = generate.BASE_URL
+
+# IndexNow key. The matching docs/<key>.txt must be live before a ping is accepted.
+INDEXNOW_KEY = "967422d4f981a8bb59afcdde5817a7a7"
 
 
 def build_ads_txt():
@@ -15,11 +18,31 @@ def build_ads_txt():
     print("ads.txt written")
 
 
+def build_robots_txt():
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "",
+        f"Sitemap: {BASE_URL}/sitemap.xml",
+        "",
+    ]
+    with open(os.path.join(OUTPUT_DIR, "robots.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    print("robots.txt written")
+
+
+def build_indexnow_key():
+    with open(os.path.join(OUTPUT_DIR, f"{INDEXNOW_KEY}.txt"), "w", encoding="utf-8") as f:
+        f.write(INDEXNOW_KEY)
+    print("indexnow key file written")
+
+
 def build_sitemap():
+    stubs = {generate.legacy_year_slug(y) for y in generate.YEARS_FRA_66}
     urls = [
         f"{BASE_URL}/{fname}"
         for fname in sorted(os.listdir(OUTPUT_DIR))
-        if fname.endswith(".html")
+        if fname.endswith(".html") and fname not in stubs
     ]
     entries = "\n".join(f"  <url><loc>{u}</loc></url>" for u in urls)
     sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -34,6 +57,8 @@ def build_sitemap():
 def main():
     generate.main()
     build_ads_txt()
+    build_robots_txt()
+    build_indexnow_key()
     build_sitemap()
 
 

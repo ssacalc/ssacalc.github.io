@@ -39,11 +39,17 @@ FRA_MONTHS = {
 }
 FRA_MONTHS_1960_PLUS = 67 * 12
 
-# Individual pages for 1943-1959 (each a genuinely distinct FRA), plus ONE combined page
-# for 1960-and-later (FRA is flat at 67 for every one of those birth years - a separate
-# near-duplicate page per year would be thin content matching nothing but round-number
-# search noise; see feedback-programmatic-seo-data-quality memory on page granularity).
-DETAIL_YEARS = list(range(1943, 1960)) + ["1960plus"]
+# One page per DISTINCT full retirement age, not per birth year.
+#
+# The 1960-and-later page was already combined on this reasoning. The same logic applies at the
+# other end and was missed: 1943 through 1954 all share an FRA of exactly 66, so those twelve pages
+# were identical apart from the year in the heading - same percentage table, same FAQ answers, same
+# everything. That is the pattern AdSense rejected uspaycheckcalc for, so they are now one page.
+#
+# 1955-1959 stay individual because each really does have its own FRA (66 and 2 months through
+# 66 and 10 months).
+YEARS_FRA_66 = list(range(1943, 1955))
+DETAIL_YEARS = ["1943-1954", 1955, 1956, 1957, 1958, 1959, "1960plus"]
 
 EARLY_RATE_FIRST_36 = 5 / 9    # % per month, first 36 months before FRA
 EARLY_RATE_BEYOND_36 = 5 / 12  # % per month, beyond 36 months before FRA
@@ -59,6 +65,8 @@ SOURCE_DELAYED = ("Social Security Administration", "https://www.ssa.gov/benefit
 def fra_months_for_year(year):
     if year == "1960plus":
         return FRA_MONTHS_1960_PLUS
+    if year == "1943-1954":
+        return FRA_MONTHS[1943]
     return FRA_MONTHS.get(year, FRA_MONTHS_1960_PLUS)
 
 
@@ -69,7 +77,20 @@ def fra_label(year):
 
 
 def year_label(year):
-    return "1960 or later" if year == "1960plus" else str(year)
+    if year == "1960plus":
+        return "1960 or later"
+    if year == "1943-1954":
+        return "1943-1954"
+    return str(year)
+
+
+def year_phrase(year):
+    """How to refer to the cohort in a sentence ('someone born ...')."""
+    if year == "1960plus":
+        return "born in 1960 or later"
+    if year == "1943-1954":
+        return "born between 1943 and 1954"
+    return f"born in {year}"
 
 
 def pct_of_pia(claim_months, fra_months):

@@ -33,6 +33,7 @@ GA_SNIPPET = f"""<!-- Google tag (gtag.js) -->
 FOOTER_NAV = """
   <div class="footer-nav">
     <a href="index.html">Home</a>
+    <a href="guides.html">Guides</a>
     <a href="about.html">About</a>
     <a href="privacy.html">Privacy Policy</a>
   </div>
@@ -45,6 +46,7 @@ SITE_HEADER = """
     <a href="index.html" class="brand">\U0001F9EE Social Security Calculator</a>
     <nav class="site-nav">
       <a href="index.html">Calculator</a>
+      <a href="guides.html">Guides</a>
       <a href="about.html">About</a>
     </nav>
   </header>
@@ -176,6 +178,15 @@ SITE_STYLE = """
   }
   .footer-nav a { color: var(--muted); text-decoration: none; }
   .footer-nav a:hover { color: var(--primary); }
+
+  .lede { font-size: 17px; color: var(--muted); border-left: 3px solid var(--primary); padding-left: 14px; }
+  .guide-list { list-style: none; padding: 0; }
+  .guide-list li {
+    padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px;
+  }
+  .guide-list a { text-decoration: none; }
+  .guide-desc { font-size: 14px; color: var(--muted); }
+  .guide-nav { margin-top: 32px; font-size: 14px; }
 """
 
 

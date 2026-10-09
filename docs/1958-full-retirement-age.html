@@ -144,6 +144,15 @@
   }
   .footer-nav a { color: var(--muted); text-decoration: none; }
   .footer-nav a:hover { color: var(--primary); }
+
+  .lede { font-size: 17px; color: var(--muted); border-left: 3px solid var(--primary); padding-left: 14px; }
+  .guide-list { list-style: none; padding: 0; }
+  .guide-list li {
+    padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px;
+  }
+  .guide-list a { text-decoration: none; }
+  .guide-desc { font-size: 14px; color: var(--muted); }
+  .guide-nav { margin-top: 32px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -152,17 +161,19 @@
     <a href="index.html" class="brand">🧮 Social Security Calculator</a>
     <nav class="site-nav">
       <a href="index.html">Calculator</a>
+      <a href="guides.html">Guides</a>
       <a href="about.html">About</a>
     </nav>
   </header>
 
 
-  <h1>Full Retirement Age for 1958</h1>
+  <h1>Full Retirement Age for Anyone Born in 1958</h1>
   
   <div class="headline">
     <div>Full retirement age for someone born in 1958</div>
     <div class="amount">66 and 8 months</div>
   </div>
+  
 
   <div class="explain">
     <h2>Your benefit at every claiming age</h2>
@@ -225,6 +236,7 @@
 
   <div class="footer-nav">
     <a href="index.html">Home</a>
+    <a href="guides.html">Guides</a>
     <a href="about.html">About</a>
     <a href="privacy.html">Privacy Policy</a>
   </div>
